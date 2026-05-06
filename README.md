@@ -91,24 +91,6 @@ com.example.smartlife
     └── journalviewmodel
 ```
 
----
-
-# Screenshots
-
-## Home Screen
-<img width="250" alt="Home Screen" src="screenshots/home.png"/>
-
-## Todo Screen
-<img width="250" alt="Todo Screen" src="screenshots/todo.png"/>
-
-## Journal Calendar
-<img width="250" alt="Journal Calendar" src="screenshots/journal.png"/>
-
-## Journal Editor
-<img width="250" alt="Journal Editor" src="screenshots/editor.png"/>
-
----
-
 # Installation
 
 1. Clone the repository
