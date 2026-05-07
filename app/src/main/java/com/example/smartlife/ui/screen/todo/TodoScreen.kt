@@ -14,7 +14,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Label
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CalendarToday
@@ -52,10 +51,17 @@ import androidx.compose.ui.unit.dp
 import com.example.smartlife.data.local.entity.TodoEntity
 import com.example.smartlife.viewmodel.todoViewModel.TodoViewModel
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.ui.platform.LocalContext
+import com.example.smartlife.utils.StreakManager
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TodoScreen(viewModel: TodoViewModel) {
+    val context = LocalContext.current
+
+    val streakManager = remember {
+        StreakManager(context)
+    }
 
     var searchQuery by remember { mutableStateOf("") }
 
@@ -262,6 +268,49 @@ fun TodoScreen(viewModel: TodoViewModel) {
                     )
                 }
             }
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+
+                shape = RoundedCornerShape(24.dp),
+
+                colors = CardDefaults.cardColors(
+                    containerColor = Color(0xFFFFF3E0)
+                )
+            ) {
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(20.dp),
+
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+
+                    Column {
+
+                        Text(
+                            text = "Daily Streak",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+
+                        Spacer(modifier = Modifier.height(4.dp))
+
+                        Text(
+                            text = "Stay consistent every day"
+                        )
+                    }
+
+                    Text(
+                        text = "🔥 ${streakManager.getCurrentStreak()}",
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
 
 
 
@@ -421,11 +470,16 @@ fun TodoScreen(viewModel: TodoViewModel) {
 
                                     onCheckedChange = {
 
-                                        viewModel.updateTodo(
+                                        val updatedTodo =
                                             todo.copy(
                                                 isDone = !todo.isDone
                                             )
-                                        )
+
+                                        viewModel.updateTodo(updatedTodo)
+
+                                        if (updatedTodo.isDone) {
+                                            streakManager.updateStreak()
+                                        }
                                     }
                                 )
                             }
