@@ -51,6 +51,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.smartlife.data.local.entity.TodoEntity
 import com.example.smartlife.viewmodel.todoViewModel.TodoViewModel
+import androidx.compose.material3.LinearProgressIndicator
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -69,6 +70,22 @@ fun TodoScreen(viewModel: TodoViewModel) {
     var editTodo by remember { mutableStateOf<TodoEntity?>(null) }
 
     var deleteTodo by remember { mutableStateOf<TodoEntity?>(null) }
+    val filteredList = todoList.filter {
+
+        it.type == selectedTab &&
+                it.title.contains(searchQuery, ignoreCase = true)
+    }
+    val totalTasks = filteredList.size
+
+    val completedTasks = filteredList.count { it.isDone }
+
+    val pendingTasks = totalTasks - completedTasks
+
+    val progress =
+        if (totalTasks > 0)
+            completedTasks.toFloat() / totalTasks.toFloat()
+        else
+            0f
 
     Scaffold(
 
@@ -151,12 +168,102 @@ fun TodoScreen(viewModel: TodoViewModel) {
             }
 
             Spacer(modifier = Modifier.height(12.dp))
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
 
-            val filteredList = todoList.filter {
+                shape = RoundedCornerShape(24.dp),
 
-                it.type == selectedTab &&
-                        it.title.contains(searchQuery, ignoreCase = true)
+                elevation = CardDefaults.cardElevation(
+                    defaultElevation = 8.dp
+                ),
+
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                )
+            ) {
+
+                Column(
+                    modifier = Modifier.padding(20.dp)
+                ) {
+
+                    Text(
+                        text = "Progress Overview",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+
+                            Text(
+                                text = "$totalTasks",
+                                fontWeight = FontWeight.Bold
+                            )
+
+                            Text("Tasks")
+                        }
+
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+
+                            Text(
+                                text = "$completedTasks",
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF4CAF50)
+                            )
+
+                            Text("Done")
+                        }
+
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+
+                            Text(
+                                text = "$pendingTasks",
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFFE53935)
+                            )
+
+                            Text("Pending")
+                        }
+
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+
+                            Text(
+                                text = "${(progress * 100).toInt()}%",
+                                fontWeight = FontWeight.Bold
+                            )
+
+                            Text("Progress")
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(18.dp))
+
+                    LinearProgressIndicator(
+                        progress = { progress },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(10.dp)
+                    )
+                }
             }
+
+
 
             if (filteredList.isEmpty()) {
 
@@ -297,14 +404,6 @@ fun TodoScreen(viewModel: TodoViewModel) {
                                             contentDescription = "Task Type",
                                             modifier = Modifier.size(16.dp),
                                             tint = MaterialTheme.colorScheme.primary
-                                        )
-
-                                        Spacer(modifier = Modifier.width(6.dp))
-
-                                        Text(
-                                            text = todo.type.uppercase(),
-                                            style = MaterialTheme.typography.bodySmall,
-                                            color = MaterialTheme.colorScheme.primary
                                         )
                                     }
 
