@@ -10,6 +10,8 @@ data class TodoEntity (
     val title: String,
     val description: String,
     val type: String,
-    val isDone: Boolean
+    val isDone: Boolean,
+    val dueDate: String="",
+    val dueTime: String=""
 
 )

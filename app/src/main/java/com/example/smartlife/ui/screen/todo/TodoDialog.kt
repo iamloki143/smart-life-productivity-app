@@ -3,6 +3,7 @@ package com.example.smartlife.ui.screen.todo
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -33,6 +34,8 @@ fun TodoDialog(
     var desc by remember {mutableStateOf(todo?.description ?: "")}
     var type by remember { mutableStateOf(todo?.type ?: "day") }
     var errorText by remember { mutableStateOf("") }
+    var dueDate by remember { mutableStateOf(todo?.dueDate ?: "") }
+    var dueTime by remember { mutableStateOf(todo?.dueTime ?: "") }
 
     val types=listOf("day","week","month","year")
 
@@ -48,10 +51,27 @@ fun TodoDialog(
                     onValueChange = {title=it},
                     label = {Text("Title")}
                 )
+                Spacer(modifier = Modifier.height(8.dp))
                 OutlinedTextField(
                     value = desc,
                     onValueChange = {desc=it},
                     label = {Text("Description")}
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                OutlinedTextField(
+                    value = dueDate,
+                    onValueChange = { dueDate = it },
+                    label = { Text("Due Date") },
+                    placeholder = { Text("07/05/2026") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                OutlinedTextField(
+                    value = dueTime,
+                    onValueChange = { dueTime = it },
+                    label = { Text("Due Time") },
+                    placeholder = { Text("07:30 PM") },
+                    modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 types.forEach {
@@ -76,17 +96,19 @@ fun TodoDialog(
             TextButton(
                 onClick = {
 
-                    if (title.isNotBlank() || desc.isNotBlank()){
+                    if (title.isNotBlank()){
                         val newTodo = TodoEntity(
-                            id =todo?.id ?: (0..1000000).random(),
+                            id =todo?.id ?: 0,
                             title= title,
                             description = desc,
                             type=type,
-                            isDone = todo?.isDone ?: false
+                            isDone = todo?.isDone ?: false,
+                            dueDate = dueDate,
+                            dueTime = dueTime
                         )
                         onSave(newTodo)
                     }else{
-                        errorText="Please enter all the required details"
+                        errorText="Please enter the title of the task"
                     }
                 }
             ) {
