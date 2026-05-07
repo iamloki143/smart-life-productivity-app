@@ -36,6 +36,10 @@ fun TodoDialog(
     var errorText by remember { mutableStateOf("") }
     var dueDate by remember { mutableStateOf(todo?.dueDate ?: "") }
     var dueTime by remember { mutableStateOf(todo?.dueTime ?: "") }
+    var priority by remember {
+        mutableStateOf(todo?.priority ?: "LOW")
+    }
+    val priorities = listOf("LOW", "MEDIUM", "HIGH")
 
     val types=listOf("day","week","month","year")
 
@@ -86,6 +90,24 @@ fun TodoDialog(
                     }
                 }
                 Spacer(modifier = Modifier.height(8.dp))
+
+                Text("Priority")
+
+                priorities.forEach {
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+
+                        RadioButton(
+                            selected = priority == it,
+                            onClick = { priority = it }
+                        )
+
+                        Text(it)
+                    }
+                }
+                Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = errorText,
                     color = Color.Red
@@ -104,7 +126,8 @@ fun TodoDialog(
                             type=type,
                             isDone = todo?.isDone ?: false,
                             dueDate = dueDate,
-                            dueTime = dueTime
+                            dueTime = dueTime,
+                            priority = priority
                         )
                         onSave(newTodo)
                     }else{

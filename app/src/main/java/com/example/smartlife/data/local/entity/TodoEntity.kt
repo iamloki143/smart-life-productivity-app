@@ -12,6 +12,7 @@ data class TodoEntity (
     val type: String,
     val isDone: Boolean,
     val dueDate: String="",
-    val dueTime: String=""
+    val dueTime: String="",
+    val priority: String = "LOW"
 
 )
