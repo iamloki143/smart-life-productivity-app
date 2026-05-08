@@ -49,6 +49,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.IntOffset
 import kotlin.math.roundToInt
 import android.content.Intent
+import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.filled.Done
@@ -56,7 +57,13 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.zIndex
 import androidx.compose.foundation.gestures.detectTransformGestures
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.unit.sp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -106,7 +113,19 @@ fun JournalEditor(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = {Text("Date: $date")},
+                title = {
+                    Column {
+                        Text(
+                            text="Journal",
+                            style= MaterialTheme.typography.titleLarge
+                        )
+                        Text(
+                            text=date,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Color.Gray
+                        )
+                    }
+                },
                 actions = {
                     IconButton(onClick = {
                         isEditMode=! isEditMode
@@ -160,46 +179,79 @@ fun JournalEditor(
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp)
-            ){
-                Canvas(modifier = Modifier.matchParentSize()) {
-                    val lineSpacing=60f
-                    var y= lineSpacing
-                    while(y <size.height){
-                        drawLine(
-                            color = Color.Gray,
-                            start = Offset(0f,y),
-                            end = Offset(size.width,y),
-                            strokeWidth = 1f
-                        )
-                        y += lineSpacing
-                    }
-                }
-                BasicTextField(
-                    value = text,
-                    onValueChange = {
-                        if (!isEditMode){
-                            text =it
+            Card(
+                shape = RoundedCornerShape(24.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFFFFFBF5)),
+                modifier = Modifier.fillMaxSize().padding(12.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color(0xFFFFFBF5))
+                        .padding(horizontal = 20.dp, vertical=16.dp)
+                ){
+                    Canvas(modifier = Modifier.matchParentSize()) {
+                        val lineSpacing=60f
+                        var y= lineSpacing
+                        while(y <size.height){
+                            drawLine(
+                                color = Color(0x22000000),
+                                start = Offset(0f,y),
+                                end = Offset(size.width,y),
+                                strokeWidth = 1f
+                            )
+                            y += lineSpacing
                         }
-                    },
-                    modifier = Modifier.fillMaxSize().zIndex(1f),
-                    enabled = !isEditMode
-                )
-                images.forEachIndexed {index,item ->
-                    AsyncImage(
-                        model = item.uri,
-                        contentDescription = null,
-                        modifier = Modifier
-                            .zIndex(if (isEditMode) 2f else 0f)
-                            .offset{
-                                IntOffset(item.x.roundToInt(),item.y.roundToInt())
+                    }
+                    BasicTextField(
+                        value = text,
+                        onValueChange = {
+                            if (!isEditMode) {
+                                text = it
                             }
-                            .pointerInput(isEditMode){
-                                if (isEditMode){
-                                    detectTransformGestures { _, pan, zoom, _ ->
+                        },
+
+                        textStyle = TextStyle(
+                            fontSize = 18.sp,
+                            lineHeight = 28.sp,
+                            color = Color(0xFF1C1C1C)
+                        ),
+
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 8.dp)
+                            .zIndex(1f),
+
+                        enabled = !isEditMode,
+                        decorationBox = { innerTextField ->
+
+                            Box {
+
+                                if (text.isEmpty()) {
+                                    Text(
+                                        text = "Write your thoughts...",
+                                        color = Color.Gray,
+                                        fontSize = 18.sp
+                                    )
+                                }
+
+                                innerTextField()
+                            }
+                        }
+                    )
+                    images.forEachIndexed {index,item ->
+                        AsyncImage(
+                            model = item.uri,
+                            contentDescription = null,
+                            modifier = Modifier
+                                .zIndex(if (isEditMode) 2f else 0f)
+                                .offset{
+                                    IntOffset(item.x.roundToInt(),item.y.roundToInt())
+                                }
+                                .pointerInput(isEditMode){
+                                    if (isEditMode){
+                                        detectTransformGestures { _, pan, zoom, _ ->
                                             images = images.toMutableList().also {
                                                 val current=it[index]
                                                 it[index]=current.copy(
@@ -209,10 +261,11 @@ fun JournalEditor(
                                                 )
                                             }
                                         }
-                                }
-                            }.size((150*item.scale).dp)
+                                    }
+                                }.size((150*item.scale).dp)
 
-                    )
+                        )
+                    }
                 }
             }
         }
