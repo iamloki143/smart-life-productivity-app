@@ -122,12 +122,29 @@ fun JournalEditor(
                     }) {
                         Icon(Icons.Default.Image, contentDescription = "Add Image")
                     }
-                    IconButton (onClick = {
-                        val imageString =images.joinToString (","){"${it.uri}|${it.x}|${it.y}|${it.scale}"}
-                        viewModel.saveEntry(date,text,imageString)
-                        onClose()
-                    }) {
-                        Icon(Icons.Default.Save, contentDescription = "save")
+                    val canSave = text.trim().isNotEmpty() || images.isNotEmpty()
+
+                    IconButton(
+                        enabled = canSave,
+                        onClick = {
+
+                            val imageString = images.joinToString(",") {
+                                "${it.uri}|${it.x}|${it.y}|${it.scale}"
+                            }
+
+                            viewModel.saveEntry(
+                                date,
+                                text.trim(),
+                                imageString
+                            )
+
+                            onClose()
+                        }
+                    ) {
+                        Icon(
+                            Icons.Default.Save,
+                            contentDescription = "Save"
+                        )
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                     IconButton(onClick = onClose) {
