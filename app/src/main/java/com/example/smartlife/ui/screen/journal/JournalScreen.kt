@@ -6,20 +6,24 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowLeft
 import androidx.compose.material.icons.filled.ArrowRight
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CardElevation
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -72,7 +76,7 @@ fun JournalScreen(viewModel: JournalViewModel) {
                 }) {
                     Icon(Icons.Default.ArrowLeft, contentDescription = "Back")
                 }
-                Text("${currentMonth.month} ${currentMonth.year}")
+                Text(text="${currentMonth.month} ${currentMonth.year}", style = MaterialTheme.typography.titleMedium)
                 IconButton(onClick = {
                     currentMonth= currentMonth.plusMonths(1)
                 }
@@ -88,7 +92,9 @@ fun JournalScreen(viewModel: JournalViewModel) {
                     Text(
                         text = it,
                         modifier = Modifier.weight(1f),
-                        textAlign = TextAlign.Center
+                        textAlign = TextAlign.Center,
+                        color = Color.Gray,
+                        style = MaterialTheme.typography.labelMedium
                     )
                 }
             }
@@ -111,21 +117,35 @@ fun JournalScreen(viewModel: JournalViewModel) {
                     Card(
                         modifier = Modifier
                             .padding(4.dp)
-                            .fillMaxWidth()
+                            .aspectRatio(1f)
                             .clickable{
                                 selectedDate=dateKey
                                 showEditor=true
                             },
-                        border = if (isToday) BorderStroke(2.dp,Color.Red) else null,
+                        shape = RoundedCornerShape(18.dp),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
+                        border = if (isToday) BorderStroke(2.dp,Color(0xFF1E88E5)) else null,
                         colors = CardDefaults.cardColors(
-                            containerColor = if(isSaved) Color(0xFF90CAF9) else Color.White
+                            containerColor =
+                                when {
+                                    isToday ->
+                                        Color(0xFF1E88E5)
+                                    isSaved ->
+                                        Color(0xFFB3E5FC)
+                                    else ->
+                                        Color(0xFFF5F5F5)
+                                }
                         )
                     ) {
                         Box(
                             contentAlignment = Alignment.Center,
                             modifier = Modifier.padding(16.dp)
                         ){
-                            Text(day.toString())
+                            Text(
+                                text=day.toString(),
+                                color =
+                                    if (isToday) Color.White else Color(0xFF1C1C1C)
+                                )
                         }
                     }
                 }
