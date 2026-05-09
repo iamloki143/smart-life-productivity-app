@@ -24,4 +24,20 @@ class JournalViewModel(private val dao: JournalDao): ViewModel() {
     fun getAllEntryDates(): Flow<List<String>>{
         return dao.getAllDates()
     }
+    fun updateImages(
+        date: String,
+        text: String,
+        images: String
+    ) {
+        viewModelScope.launch {
+
+            dao.insert(
+                JournalEntity(
+                    date = date,
+                    content = text,
+                    images = images
+                )
+            )
+        }
+    }
 }

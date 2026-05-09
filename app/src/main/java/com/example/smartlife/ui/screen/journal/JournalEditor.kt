@@ -50,7 +50,9 @@ import androidx.compose.ui.unit.IntOffset
 import kotlin.math.roundToInt
 import android.content.Intent
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Edit
@@ -58,9 +60,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.zIndex
 import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.sp
@@ -78,6 +83,9 @@ fun JournalEditor(
     var text by remember { mutableStateOf("") }
     var images by remember { mutableStateOf(listOf<ImageItem>()) }
     var isEditMode by remember { mutableStateOf(false) }
+    var selectedImageIndex by remember {
+        mutableStateOf<Int?>(null)
+    }
 
 
     val launcher =rememberLauncherForActivityResult(
@@ -91,23 +99,26 @@ fun JournalEditor(
             images = images+ ImageItem(it)
         }
     }
+    var isInitialized by remember { mutableStateOf(false) }
 
     LaunchedEffect(entry) {
-        text=entry?.content ?: ""
-
-        images =entry?.images
-            ?.split(",")
-            ?.filter { it.isNotEmpty() }
-            ?.map {
-                val parts =it.split("|")
-                ImageItem(
-                    uri = Uri.parse(parts[0]),
-                    x = parts.getOrNull(1)?.toFloatOrNull() ?: 0f,
-                    y = parts.getOrNull(2)?.toFloatOrNull() ?: 0f,
-                    scale = parts.getOrNull(3)?.toFloatOrNull() ?: 1f
-                )
-            }
-            ?:emptyList()
+        val currentEntry = entry
+        if (!isInitialized && currentEntry != null) {
+            text = currentEntry.content ?: ""
+            images = currentEntry.images
+                ?.split("||SEP||")
+                ?.filter { s -> s.isNotEmpty() }
+                ?.map { s ->
+                    val parts = s.split("|", limit = 4)
+                    ImageItem(
+                        uri = Uri.parse(parts[0]),
+                        x = parts.getOrNull(1)?.toFloatOrNull() ?: 0f,
+                        y = parts.getOrNull(2)?.toFloatOrNull() ?: 0f,
+                        scale = parts.getOrNull(3)?.toFloatOrNull() ?: 1f
+                    )
+                } ?: emptyList()
+            isInitialized = true
+        }
     }
 
     Scaffold(
@@ -129,6 +140,9 @@ fun JournalEditor(
                 actions = {
                     IconButton(onClick = {
                         isEditMode=! isEditMode
+                        if (!isEditMode){
+                            selectedImageIndex =null
+                        }
                     }) {
                         if (isEditMode){
                             Icon(Icons.Default.Done,contentDescription = null)
@@ -147,7 +161,7 @@ fun JournalEditor(
                         enabled = canSave,
                         onClick = {
 
-                            val imageString = images.joinToString(",") {
+                            val imageString = images.joinToString("||SEP||") {
                                 "${it.uri}|${it.x}|${it.y}|${it.scale}"
                             }
 
@@ -250,21 +264,57 @@ fun JournalEditor(
                                     IntOffset(item.x.roundToInt(),item.y.roundToInt())
                                 }
                                 .pointerInput(isEditMode){
+                                    detectTapGestures(
+                                        onLongPress = {
+                                            if (isEditMode){
+                                                selectedImageIndex=index
+                                            }
+                                        }
+                                    )
+                                }.pointerInput(isEditMode){
                                     if (isEditMode){
                                         detectTransformGestures { _, pan, zoom, _ ->
-                                            images = images.toMutableList().also {
-                                                val current=it[index]
+                                            images=images.toMutableList().also {
+                                                val current = it[index]
                                                 it[index]=current.copy(
-                                                    x=current.x + pan.x,
-                                                    y=current.y + pan.y,
-                                                    scale = (current.scale*zoom).coerceIn(0.5f,3f)
+                                                    x=current.x + pan.x ,
+                                                    y = current.y + pan.y,
+                                                    scale = (current.scale * zoom).coerceIn(0.5f,3f)
                                                 )
                                             }
                                         }
                                     }
-                                }.size((150*item.scale).dp)
+                                }.border(
+                                    width =
+                                        if (isEditMode && selectedImageIndex == index)
+                                            3.dp
+                                        else
+                                            0.dp,
+
+                                    color = Color.Red,
+
+                                    shape = RoundedCornerShape(12.dp)
+                                )
+                                    .size((150 * item.scale).dp)
 
                         )
+                    }
+                    if (isEditMode && selectedImageIndex != null) {
+                        FloatingActionButton(
+                            onClick = {
+                                val index = selectedImageIndex
+                                if (index != null && index >= 0 && index < images.size) {
+                                    images = images.toMutableList().also { it.removeAt(index) }
+                                }
+                                selectedImageIndex = null
+                            },
+                            modifier = Modifier
+                                .align(Alignment.BottomEnd)
+                                .padding(16.dp)
+                                .zIndex(3f)  // ← must be higher than BasicTextField's zIndex(1f)
+                        ) {
+                            Icon(Icons.Default.Delete, contentDescription = "Delete Image")
+                        }
                     }
                 }
             }
