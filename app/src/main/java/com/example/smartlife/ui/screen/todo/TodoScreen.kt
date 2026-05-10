@@ -37,12 +37,10 @@ fun TodoScreen(viewModel: TodoViewModel) {
     var editTodo by remember { mutableStateOf<TodoEntity?>(null) }
     var deleteTodo by remember { mutableStateOf<TodoEntity?>(null) }
 
-    // Today's display date
     val todayDisplay = remember {
         SimpleDateFormat("EEE, d MMM", Locale.getDefault()).format(Date())
     }
 
-    // Auto-remove expired tasks: delete tasks whose dueDate+dueTime has passed
     LaunchedEffect(todoList) {
         val sdf = SimpleDateFormat("dd/MM/yyyy hh:mm a", Locale.getDefault())
         val now = Date()
@@ -103,7 +101,6 @@ fun TodoScreen(viewModel: TodoViewModel) {
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Search
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = { searchQuery = it },
@@ -116,7 +113,6 @@ fun TodoScreen(viewModel: TodoViewModel) {
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Tabs
             TabRow(selectedTabIndex = tabs.indexOf(selectedTab)) {
                 tabs.forEach { tab ->
                     Tab(
@@ -129,7 +125,6 @@ fun TodoScreen(viewModel: TodoViewModel) {
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Progress card
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(20.dp),
@@ -165,12 +160,10 @@ fun TodoScreen(viewModel: TodoViewModel) {
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            // Stat mini-cards row
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                // Streak
                 Card(
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(20.dp),
@@ -202,7 +195,6 @@ fun TodoScreen(viewModel: TodoViewModel) {
                         )
                     }
                 }
-                // Weekly completion
                 Card(
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(20.dp),
@@ -238,7 +230,6 @@ fun TodoScreen(viewModel: TodoViewModel) {
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Empty state
             if (filteredList.isEmpty()) {
                 Column(
                     modifier = Modifier
@@ -263,7 +254,6 @@ fun TodoScreen(viewModel: TodoViewModel) {
                 }
             }
 
-            // Task list
             LazyColumn(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 items(filteredList) { todo ->
                     TodoCard(
@@ -281,7 +271,6 @@ fun TodoScreen(viewModel: TodoViewModel) {
             }
         }
 
-        // Add / Edit dialog
         if (showDialog) {
             TodoDialog(
                 todo = editTodo,
@@ -319,7 +308,6 @@ fun TodoScreen(viewModel: TodoViewModel) {
             )
         }
 
-        // Delete confirm
         deleteTodo?.let { todoToDelete ->
             AlertDialog(
                 onDismissRequest = { deleteTodo = null },

@@ -78,7 +78,6 @@ fun JournalScreen(viewModel: JournalViewModel) {
                 .padding(horizontal = 16.dp)
         ) {
 
-            // Month navigator
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -105,7 +104,6 @@ fun JournalScreen(viewModel: JournalViewModel) {
                 }
             }
 
-            // Day-of-week headers
             Row(modifier = Modifier.fillMaxWidth()) {
                 listOf("S", "M", "T", "W", "T", "F", "S").forEach { label ->
                     Text(
@@ -121,7 +119,6 @@ fun JournalScreen(viewModel: JournalViewModel) {
 
             Spacer(modifier = Modifier.height(4.dp))
 
-            // Calendar grid
             LazyVerticalGrid(
                 columns = GridCells.Fixed(7),
                 modifier = Modifier
@@ -184,7 +181,6 @@ fun JournalScreen(viewModel: JournalViewModel) {
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Month stats bar
             Card(
                 modifier = Modifier
                     .fillMaxWidth()

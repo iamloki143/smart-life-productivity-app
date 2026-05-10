@@ -124,9 +124,6 @@ fun JournalEditor(
             isInitialized = true
         }
     }
-
-    // Replace the Scaffold block in JournalEditor with this:
-
     Scaffold(
         topBar = {
             TopAppBar(
@@ -145,7 +142,6 @@ fun JournalEditor(
                     }
                 },
                 actions = {
-                    // Edit/Done toggle
                     IconButton(onClick = {
                         isEditMode = !isEditMode
                         if (!isEditMode) selectedImageIndex = null
@@ -157,7 +153,6 @@ fun JournalEditor(
                             else MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
-                    // Add image
                     IconButton(onClick = { launcher.launch(arrayOf("image/*")) }) {
                         Icon(
                             Icons.Default.Image,
@@ -165,7 +160,6 @@ fun JournalEditor(
                             tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
-                    // Save
                     val canSave = text.trim().isNotEmpty() || images.isNotEmpty()
                     IconButton(
                         enabled = canSave,
@@ -184,7 +178,6 @@ fun JournalEditor(
                             else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
                         )
                     }
-                    // Close
                     IconButton(onClick = onClose) {
                         Icon(
                             Icons.Default.Close,
@@ -201,15 +194,12 @@ fun JournalEditor(
                 .fillMaxSize()
                 .padding(padding)
         ) {
-
-            // Mood + tag chips row
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 8.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                // These are simple decoration chips — wire to state if you want to persist mood/tag
                 listOf("😊 Mood", "🏷 Tag").forEach { label ->
                     Surface(
                         shape = RoundedCornerShape(99.dp),
@@ -226,8 +216,6 @@ fun JournalEditor(
                     }
                 }
             }
-
-            // Notebook card
             Card(
                 shape = RoundedCornerShape(20.dp),
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
@@ -242,7 +230,6 @@ fun JournalEditor(
                         .background(Color(0xFFFFFBF5))
                         .padding(horizontal = 20.dp, vertical = 16.dp)
                 ) {
-                    // Ruled lines
                     Canvas(modifier = Modifier.matchParentSize()) {
                         val lineSpacing = 56f
                         var y = lineSpacing
@@ -255,7 +242,6 @@ fun JournalEditor(
                             )
                             y += lineSpacing
                         }
-                        // Left margin line
                         drawLine(
                             color = Color(0x22E57373),
                             start = Offset(28f, 0f),
@@ -269,13 +255,13 @@ fun JournalEditor(
                         onValueChange = { if (!isEditMode) text = it },
                         textStyle = TextStyle(
                             fontSize = 17.sp,
-                            lineHeight = 56.sp,   // matches ruled line spacing
+                            lineHeight = 56.sp,
                             color = Color(0xFF1C1C1C),
                             fontFamily = androidx.compose.ui.text.font.FontFamily.Serif
                         ),
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(start = 36.dp)   // indent past margin line
+                            .padding(start = 36.dp)
                             .zIndex(1f),
                         enabled = !isEditMode,
                         decorationBox = { innerTextField ->
@@ -293,7 +279,6 @@ fun JournalEditor(
                         }
                     )
 
-                    // Images overlay (unchanged logic)
                     images.forEachIndexed { index, item ->
                         AsyncImage(
                             model = item.uri,
@@ -328,8 +313,6 @@ fun JournalEditor(
                                 .size((150 * item.scale).dp)
                         )
                     }
-
-                    // Delete FAB for selected image
                     if (isEditMode && selectedImageIndex != null) {
                         FloatingActionButton(
                             onClick = {
