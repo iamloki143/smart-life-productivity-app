@@ -49,8 +49,10 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.IntOffset
 import kotlin.math.roundToInt
 import android.content.Intent
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.size
@@ -65,9 +67,11 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -121,199 +125,232 @@ fun JournalEditor(
         }
     }
 
+    // Replace the Scaffold block in JournalEditor with this:
+
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
                     Column {
                         Text(
-                            text="Journal",
-                            style= MaterialTheme.typography.titleLarge
+                            text = "Journal",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Medium
                         )
                         Text(
-                            text=date,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = Color.Gray
+                            text = date,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 },
                 actions = {
+                    // Edit/Done toggle
                     IconButton(onClick = {
-                        isEditMode=! isEditMode
-                        if (!isEditMode){
-                            selectedImageIndex =null
-                        }
+                        isEditMode = !isEditMode
+                        if (!isEditMode) selectedImageIndex = null
                     }) {
-                        if (isEditMode){
-                            Icon(Icons.Default.Done,contentDescription = null)
-                        }else{
-                            Icon(Icons.Default.Edit,contentDescription = null)
-                        }
+                        Icon(
+                            if (isEditMode) Icons.Default.Done else Icons.Default.Edit,
+                            contentDescription = if (isEditMode) "Done" else "Edit mode",
+                            tint = if (isEditMode) MaterialTheme.colorScheme.primary
+                            else MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
-                    IconButton(onClick = {
-                        launcher.launch(arrayOf("image/*"))
-                    }) {
-                        Icon(Icons.Default.Image, contentDescription = "Add Image")
+                    // Add image
+                    IconButton(onClick = { launcher.launch(arrayOf("image/*")) }) {
+                        Icon(
+                            Icons.Default.Image,
+                            contentDescription = "Add image",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
+                    // Save
                     val canSave = text.trim().isNotEmpty() || images.isNotEmpty()
-
                     IconButton(
                         enabled = canSave,
                         onClick = {
-
                             val imageString = images.joinToString("||SEP||") {
                                 "${it.uri}|${it.x}|${it.y}|${it.scale}"
                             }
-
-                            viewModel.saveEntry(
-                                date,
-                                text.trim(),
-                                imageString
-                            )
-
+                            viewModel.saveEntry(date, text.trim(), imageString)
                             onClose()
                         }
                     ) {
                         Icon(
                             Icons.Default.Save,
-                            contentDescription = "Save"
+                            contentDescription = "Save",
+                            tint = if (canSave) MaterialTheme.colorScheme.primary
+                            else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
                         )
                     }
-                    Spacer(modifier = Modifier.width(8.dp))
+                    // Close
                     IconButton(onClick = onClose) {
-                        Icon(Icons.Default.Close, contentDescription = "close")
+                        Icon(
+                            Icons.Default.Close,
+                            contentDescription = "Close",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
-
                 }
             )
         }
-    ) {padding ->
+    ) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
         ) {
+
+            // Mood + tag chips row
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                // These are simple decoration chips — wire to state if you want to persist mood/tag
+                listOf("😊 Mood", "🏷 Tag").forEach { label ->
+                    Surface(
+                        shape = RoundedCornerShape(99.dp),
+                        color = MaterialTheme.colorScheme.surfaceVariant,
+                        border = BorderStroke(0.5.dp, MaterialTheme.colorScheme.outlineVariant),
+                        modifier = Modifier.clickable { }
+                    ) {
+                        Text(
+                            text = label,
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp)
+                        )
+                    }
+                }
+            }
+
+            // Notebook card
             Card(
-                shape = RoundedCornerShape(24.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+                shape = RoundedCornerShape(20.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                 colors = CardDefaults.cardColors(containerColor = Color(0xFFFFFBF5)),
-                modifier = Modifier.fillMaxSize().padding(12.dp)
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
             ) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
                         .background(Color(0xFFFFFBF5))
-                        .padding(horizontal = 20.dp, vertical=16.dp)
-                ){
+                        .padding(horizontal = 20.dp, vertical = 16.dp)
+                ) {
+                    // Ruled lines
                     Canvas(modifier = Modifier.matchParentSize()) {
-                        val lineSpacing=60f
-                        var y= lineSpacing
-                        while(y <size.height){
+                        val lineSpacing = 56f
+                        var y = lineSpacing
+                        while (y < size.height) {
                             drawLine(
-                                color = Color(0x22000000),
-                                start = Offset(0f,y),
-                                end = Offset(size.width,y),
+                                color = Color(0x18000000),
+                                start = Offset(0f, y),
+                                end = Offset(size.width, y),
                                 strokeWidth = 1f
                             )
                             y += lineSpacing
                         }
+                        // Left margin line
+                        drawLine(
+                            color = Color(0x22E57373),
+                            start = Offset(28f, 0f),
+                            end = Offset(28f, size.height),
+                            strokeWidth = 1.5f
+                        )
                     }
+
                     BasicTextField(
                         value = text,
-                        onValueChange = {
-                            if (!isEditMode) {
-                                text = it
-                            }
-                        },
-
+                        onValueChange = { if (!isEditMode) text = it },
                         textStyle = TextStyle(
-                            fontSize = 18.sp,
-                            lineHeight = 28.sp,
-                            color = Color(0xFF1C1C1C)
+                            fontSize = 17.sp,
+                            lineHeight = 56.sp,   // matches ruled line spacing
+                            color = Color(0xFF1C1C1C),
+                            fontFamily = androidx.compose.ui.text.font.FontFamily.Serif
                         ),
-
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(horizontal = 8.dp)
+                            .padding(start = 36.dp)   // indent past margin line
                             .zIndex(1f),
-
                         enabled = !isEditMode,
                         decorationBox = { innerTextField ->
-
                             Box {
-
                                 if (text.isEmpty()) {
                                     Text(
-                                        text = "Write your thoughts...",
-                                        color = Color.Gray,
-                                        fontSize = 18.sp
+                                        text = "Write your thoughts…",
+                                        color = Color(0x88000000),
+                                        fontSize = 17.sp,
+                                        fontFamily = androidx.compose.ui.text.font.FontFamily.Serif
                                     )
                                 }
-
                                 innerTextField()
                             }
                         }
                     )
-                    images.forEachIndexed {index,item ->
+
+                    // Images overlay (unchanged logic)
+                    images.forEachIndexed { index, item ->
                         AsyncImage(
                             model = item.uri,
                             contentDescription = null,
                             modifier = Modifier
                                 .zIndex(if (isEditMode) 2f else 0f)
-                                .offset{
-                                    IntOffset(item.x.roundToInt(),item.y.roundToInt())
+                                .offset { IntOffset(item.x.roundToInt(), item.y.roundToInt()) }
+                                .pointerInput(isEditMode) {
+                                    detectTapGestures(onLongPress = {
+                                        if (isEditMode) selectedImageIndex = index
+                                    })
                                 }
-                                .pointerInput(isEditMode){
-                                    detectTapGestures(
-                                        onLongPress = {
-                                            if (isEditMode){
-                                                selectedImageIndex=index
-                                            }
-                                        }
-                                    )
-                                }.pointerInput(isEditMode){
-                                    if (isEditMode){
+                                .pointerInput(isEditMode) {
+                                    if (isEditMode) {
                                         detectTransformGestures { _, pan, zoom, _ ->
-                                            images=images.toMutableList().also {
-                                                val current = it[index]
-                                                it[index]=current.copy(
-                                                    x=current.x + pan.x ,
-                                                    y = current.y + pan.y,
-                                                    scale = (current.scale * zoom).coerceIn(0.5f,3f)
+                                            images = images.toMutableList().also {
+                                                val cur = it[index]
+                                                it[index] = cur.copy(
+                                                    x = cur.x + pan.x,
+                                                    y = cur.y + pan.y,
+                                                    scale = (cur.scale * zoom).coerceIn(0.5f, 3f)
                                                 )
                                             }
                                         }
                                     }
-                                }.border(
-                                    width =
-                                        if (isEditMode && selectedImageIndex == index)
-                                            3.dp
-                                        else
-                                            0.dp,
-
-                                    color = Color.Red,
-
+                                }
+                                .border(
+                                    width = if (isEditMode && selectedImageIndex == index) 2.dp else 0.dp,
+                                    color = MaterialTheme.colorScheme.error,
                                     shape = RoundedCornerShape(12.dp)
                                 )
-                                    .size((150 * item.scale).dp)
-
+                                .size((150 * item.scale).dp)
                         )
                     }
+
+                    // Delete FAB for selected image
                     if (isEditMode && selectedImageIndex != null) {
                         FloatingActionButton(
                             onClick = {
-                                val index = selectedImageIndex
-                                if (index != null && index >= 0 && index < images.size) {
-                                    images = images.toMutableList().also { it.removeAt(index) }
+                                selectedImageIndex?.let { idx ->
+                                    if (idx in images.indices) {
+                                        images = images.toMutableList().also { it.removeAt(idx) }
+                                    }
                                 }
                                 selectedImageIndex = null
                             },
                             modifier = Modifier
                                 .align(Alignment.BottomEnd)
-                                .padding(16.dp)
-                                .zIndex(3f)  // ← must be higher than BasicTextField's zIndex(1f)
+                                .padding(8.dp)
+                                .zIndex(3f),
+                            containerColor = MaterialTheme.colorScheme.errorContainer
                         ) {
-                            Icon(Icons.Default.Delete, contentDescription = "Delete Image")
+                            Icon(
+                                Icons.Default.Delete,
+                                contentDescription = "Delete image",
+                                tint = MaterialTheme.colorScheme.onErrorContainer
+                            )
                         }
                     }
                 }
