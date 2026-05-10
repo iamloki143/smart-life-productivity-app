@@ -5,8 +5,12 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccessTime
+import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
@@ -65,17 +69,21 @@ fun TodoDialog(
                 OutlinedTextField(
                     value = dueDate,
                     onValueChange = { dueDate = it },
-                    label = { Text("Due Date") },
-                    placeholder = { Text("07/05/2026") },
-                    modifier = Modifier.fillMaxWidth()
+                    label = { Text("Due date") },
+                    placeholder = { Text("dd/MM/yyyy") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    leadingIcon = { Icon(Icons.Default.CalendarToday, contentDescription = null) }
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 OutlinedTextField(
                     value = dueTime,
                     onValueChange = { dueTime = it },
-                    label = { Text("Due Time") },
+                    label = { Text("Due time") },
                     placeholder = { Text("07:30 PM") },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    leadingIcon = { Icon(Icons.Default.AccessTime, contentDescription = null) }
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 types.forEach {
