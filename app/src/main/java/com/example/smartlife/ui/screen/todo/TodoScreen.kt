@@ -2,6 +2,7 @@ package com.example.smartlife.ui.screen.todo
 
 import StatItem
 import TodoCard
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -18,6 +19,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import com.example.smartlife.data.local.entity.TodoEntity
+import com.example.smartlife.notification.AlarmScheduler
 import com.example.smartlife.viewmodel.todoViewModel.TodoViewModel
 import com.example.smartlife.utils.StreakManager
 import java.text.SimpleDateFormat
@@ -41,22 +43,6 @@ fun TodoScreen(viewModel: TodoViewModel) {
         SimpleDateFormat("EEE, d MMM", Locale.getDefault()).format(Date())
     }
 
-    LaunchedEffect(todoList) {
-        val sdf = SimpleDateFormat("dd/MM/yyyy hh:mm a", Locale.getDefault())
-        val now = Date()
-        todoList.forEach { todo ->
-            if (todo.dueDate.isNotBlank() && todo.dueTime.isNotBlank()) {
-                runCatching {
-                    sdf.parse("${todo.dueDate} ${todo.dueTime}")
-                }.getOrNull()?.let { due ->
-                    if (due.before(now) && !todo.isDone) {
-                        viewModel.deleteTodo(todo)
-                    }
-                }
-            }
-        }
-    }
-
     val filteredList = todoList.filter {
         it.type == selectedTab && it.title.contains(searchQuery, ignoreCase = true)
     }
@@ -65,8 +51,6 @@ fun TodoScreen(viewModel: TodoViewModel) {
     val completedTasks = filteredList.count { it.isDone }
     val pendingTasks = totalTasks - completedTasks
     val progress = if (totalTasks > 0) completedTasks.toFloat() / totalTasks.toFloat() else 0f
-
-    // Weekly completion for the stat card
     val weeklyTasks = todoList.filter { it.type == "week" }
     val weeklyProgress = if (weeklyTasks.isNotEmpty())
         (weeklyTasks.count { it.isDone } * 100 / weeklyTasks.size) else 0
@@ -98,6 +82,19 @@ fun TodoScreen(viewModel: TodoViewModel) {
                 .padding(padding)
                 .padding(horizontal = 16.dp)
         ) {
+
+            Button(onClick = {
+                val triggerTime = System.currentTimeMillis() + 5_000L // 5 seconds
+                AlarmScheduler.scheduleTaskReminder(
+                    context = context,
+                    triggerTime = triggerTime,
+                    title = "Test Notification",
+                    message = "This is a test",
+                    requestCode = 12345
+                )
+            }) {
+                Text("Test Notification (5s)")
+            }
 
             Spacer(modifier = Modifier.height(8.dp))
 
@@ -267,7 +264,7 @@ fun TodoScreen(viewModel: TodoViewModel) {
                         onDelete = { deleteTodo = todo }
                     )
                 }
-                item { Spacer(modifier = Modifier.height(80.dp)) } // FAB clearance
+                item { Spacer(modifier = Modifier.height(80.dp)) }
             }
         }
 
@@ -288,7 +285,20 @@ fun TodoScreen(viewModel: TodoViewModel) {
                                 priority = newTodo.priority
                             )
                         )
-                    } else {
+
+                        val triggerTime = parseDueDateTime(newTodo.dueDate, newTodo.dueTime)
+                        if (triggerTime > System.currentTimeMillis()) {
+                            AlarmScheduler.scheduleTaskReminder(
+                                context = context,
+                                triggerTime = triggerTime,
+                                title = newTodo.title,
+                                message = newTodo.description ?: "Task Reminder",
+                                requestCode = (0..99999).random()
+                            )
+                        }else{
+                            Log.d("ALARM", "Trigger time is in the past! Not scheduling.")
+                        }
+                } else {
                         viewModel.updateTodo(
                             TodoEntity(
                                 id = newTodo.id,
@@ -323,5 +333,13 @@ fun TodoScreen(viewModel: TodoViewModel) {
                 }
             )
         }
+    }
+}
+fun parseDueDateTime(dueDate: String, dueTime: String): Long {
+    return try {
+        val sdf = SimpleDateFormat("dd/MM/yyyy hh:mm a", Locale.getDefault())
+        sdf.parse("$dueDate $dueTime")?.time ?: System.currentTimeMillis()
+    } catch (e: Exception) {
+        System.currentTimeMillis()
     }
 }

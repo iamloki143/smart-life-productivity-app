@@ -25,6 +25,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.example.smartlife.data.local.entity.TodoEntity
+import android.app.DatePickerDialog
+import android.app.TimePickerDialog
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material3.IconButton
+import androidx.compose.ui.platform.LocalContext
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -34,6 +42,7 @@ fun TodoDialog(
     onSave:(TodoEntity) -> Unit,
     onDelete:() -> Unit
 ) {
+    val context = LocalContext.current
     var title by remember { mutableStateOf(todo?.title ?: "") }
     var desc by remember {mutableStateOf(todo?.description ?: "")}
     var type by remember { mutableStateOf(todo?.type ?: "day") }
@@ -46,6 +55,7 @@ fun TodoDialog(
     val priorities = listOf("LOW", "MEDIUM", "HIGH")
 
     val types=listOf("day","week","month","year")
+    val calendar = Calendar.getInstance()
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -68,22 +78,99 @@ fun TodoDialog(
                 Spacer(modifier = Modifier.height(8.dp))
                 OutlinedTextField(
                     value = dueDate,
-                    onValueChange = { dueDate = it },
-                    label = { Text("Due date") },
-                    placeholder = { Text("dd/MM/yyyy") },
+                    onValueChange = {},
                     modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    leadingIcon = { Icon(Icons.Default.CalendarToday, contentDescription = null) }
+                    label = { Text("Due Date") },
+                    readOnly = true,
+                    trailingIcon = {
+                        IconButton(
+                            onClick = {
+
+                                DatePickerDialog(
+                                    context,
+                                    { _, year, month, dayOfMonth ->
+
+                                        calendar.set(
+                                            Calendar.YEAR,
+                                            year
+                                        )
+
+                                        calendar.set(
+                                            Calendar.MONTH,
+                                            month
+                                        )
+
+                                        calendar.set(
+                                            Calendar.DAY_OF_MONTH,
+                                            dayOfMonth
+                                        )
+
+                                        dueDate = SimpleDateFormat(
+                                            "dd/MM/yyyy",
+                                            Locale.getDefault()
+                                        ).format(calendar.time)
+
+                                    },
+                                    calendar.get(Calendar.YEAR),
+                                    calendar.get(Calendar.MONTH),
+                                    calendar.get(Calendar.DAY_OF_MONTH)
+
+                                ).show()
+                            }
+                        ) {
+                            Icon(
+                                Icons.Default.DateRange,
+                                contentDescription = null
+                            )
+                        }
+                    }
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 OutlinedTextField(
                     value = dueTime,
-                    onValueChange = { dueTime = it },
-                    label = { Text("Due time") },
-                    placeholder = { Text("07:30 PM") },
+                    onValueChange = {},
                     modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    leadingIcon = { Icon(Icons.Default.AccessTime, contentDescription = null) }
+                    label = { Text("Due Time") },
+                    readOnly = true,
+                    trailingIcon = {
+
+                        IconButton(
+                            onClick = {
+
+                                TimePickerDialog(
+                                    context,
+                                    { _, hour, minute ->
+
+                                        calendar.set(
+                                            Calendar.HOUR_OF_DAY,
+                                            hour
+                                        )
+
+                                        calendar.set(
+                                            Calendar.MINUTE,
+                                            minute
+                                        )
+
+                                        dueTime = SimpleDateFormat(
+                                            "hh:mm a",
+                                            Locale.getDefault()
+                                        ).format(calendar.time)
+
+                                    },
+                                    calendar.get(Calendar.HOUR_OF_DAY),
+                                    calendar.get(Calendar.MINUTE),
+                                    false
+
+                                ).show()
+                            }
+                        ) {
+
+                            Icon(
+                                Icons.Default.AccessTime,
+                                contentDescription = null
+                            )
+                        }
+                    }
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 types.forEach {

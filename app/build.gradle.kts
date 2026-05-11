@@ -71,4 +71,6 @@ dependencies {
     implementation("io.coil-kt:coil-compose:2.6.0")
     //time day year
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
+    //Local Notification
+    implementation("androidx.work:work-runtime-ktx:2.9.0")
 }
