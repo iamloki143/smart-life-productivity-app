@@ -83,19 +83,6 @@ fun TodoScreen(viewModel: TodoViewModel) {
                 .padding(horizontal = 16.dp)
         ) {
 
-            Button(onClick = {
-                val triggerTime = System.currentTimeMillis() + 5_000L // 5 seconds
-                AlarmScheduler.scheduleTaskReminder(
-                    context = context,
-                    triggerTime = triggerTime,
-                    title = "Test Notification",
-                    message = "This is a test",
-                    requestCode = 12345
-                )
-            }) {
-                Text("Test Notification (5s)")
-            }
-
             Spacer(modifier = Modifier.height(8.dp))
 
             OutlinedTextField(
