@@ -28,7 +28,7 @@ object NotificationHelper {
 
             val channel = NotificationChannel(
                 CHANNEL_ID,
-                "SmartLife Notifications",
+                "Focus Notifications",
                 NotificationManager.IMPORTANCE_HIGH
             )
 

@@ -14,7 +14,7 @@ class AlarmReceiver : BroadcastReceiver() {
 
         val title =
             intent.getStringExtra("title")
-                ?: "SmartLife"
+                ?: "Focus"
 
         val message =
             intent.getStringExtra("message")

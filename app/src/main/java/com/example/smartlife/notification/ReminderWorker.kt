@@ -13,7 +13,7 @@ class ReminderWorker(
 
         NotificationHelper.showNotification(
             applicationContext,
-            "SmartLife 🚀",
+            "Focus 🚀",
             "Stay focused and complete your tasks today."
         )
 
